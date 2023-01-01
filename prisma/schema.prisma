@@ -1,0 +1,35 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Users {
+  id                 Int      @id @default(autoincrement())
+  twitterId          String   @unique
+  profileUrl         String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  twitterAccessToken String
+  twitterUsername    String
+  tweets             Tweets[]
+}
+
+enum TweetStatus {
+  pending
+  scheduled
+}
+
+model Tweets {
+  id            Int         @id @default(autoincrement())
+  text          String
+  scheduledDate DateTime
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  user          Users       @relation(fields: [userId], references: [id])
+  userId        Int
+  status        TweetStatus @default(value: pending)
+}

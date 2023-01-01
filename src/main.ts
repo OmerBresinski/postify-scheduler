@@ -1,7 +1,8 @@
 import cron from "node-cron";
-import { prismaClient } from "postify-db";
 import TwitterApi from "twitter-api-v2";
+import { PrismaClient } from "@prisma/client";
 
+const prismaClient = new PrismaClient();
 const ONE_MINUTE = `*/1 * * * *`;
 
 cron.schedule(ONE_MINUTE, async () => {

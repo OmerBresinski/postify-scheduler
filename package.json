@@ -29,7 +29,7 @@
     "typescript": "^4.7.4"
   },
   "dependencies": {
-    "@prisma/client": "^4.2.1",
+    "@prisma/client": "^4.8.0",
     "@superfaceai/passport-twitter-oauth2": "^1.2.2",
     "@types/body-parser": "^1.19.2",
     "@types/cookie-parser": "^1.4.3",

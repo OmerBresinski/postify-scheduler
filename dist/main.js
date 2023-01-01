@@ -40,12 +40,81 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 exports.__esModule = true;
 var node_cron_1 = __importDefault(require("node-cron"));
-//write a chron expression string which represents 1 minute
+var twitter_api_v2_1 = __importDefault(require("twitter-api-v2"));
+var client_1 = require("@prisma/client");
+var prismaClient = new client_1.PrismaClient();
 var ONE_MINUTE = "*/1 * * * *";
 node_cron_1["default"].schedule(ONE_MINUTE, function () { return __awaiter(void 0, void 0, void 0, function () {
+    var users, _loop_1, _i, users_1, user, ex_1;
     return __generator(this, function (_a) {
-        console.log("running your task...");
-        return [2 /*return*/];
+        switch (_a.label) {
+            case 0:
+                _a.trys.push([0, 6, , 7]);
+                console.log("".concat(new Date().toISOString(), " - Scheduling"));
+                return [4 /*yield*/, prismaClient.users.findMany({
+                        include: {
+                            tweets: {
+                                where: {
+                                    status: "pending",
+                                    scheduledDate: {
+                                        lte: new Date()
+                                    }
+                                }
+                            }
+                        }
+                    })];
+            case 1:
+                users = _a.sent();
+                _loop_1 = function (user) {
+                    var twitterClient;
+                    return __generator(this, function (_b) {
+                        switch (_b.label) {
+                            case 0:
+                                twitterClient = new twitter_api_v2_1["default"](user.twitterAccessToken);
+                                return [4 /*yield*/, Promise.all(user.tweets.map(function (_a) {
+                                        var text = _a.text;
+                                        return twitterClient.v2.tweet(text);
+                                    }))];
+                            case 1:
+                                _b.sent();
+                                return [4 /*yield*/, prismaClient.tweets.updateMany({
+                                        where: {
+                                            id: {
+                                                "in": user.tweets.map(function (_a) {
+                                                    var id = _a.id;
+                                                    return id;
+                                                })
+                                            }
+                                        },
+                                        data: {
+                                            status: "scheduled"
+                                        }
+                                    })];
+                            case 2:
+                                _b.sent();
+                                return [2 /*return*/];
+                        }
+                    });
+                };
+                _i = 0, users_1 = users;
+                _a.label = 2;
+            case 2:
+                if (!(_i < users_1.length)) return [3 /*break*/, 5];
+                user = users_1[_i];
+                return [5 /*yield**/, _loop_1(user)];
+            case 3:
+                _a.sent();
+                _a.label = 4;
+            case 4:
+                _i++;
+                return [3 /*break*/, 2];
+            case 5: return [3 /*break*/, 7];
+            case 6:
+                ex_1 = _a.sent();
+                console.log(ex_1);
+                return [3 /*break*/, 7];
+            case 7: return [2 /*return*/];
+        }
     });
 }); });
 //# sourceMappingURL=main.js.map
