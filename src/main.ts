@@ -1,8 +1,7 @@
 import cron from "node-cron";
 import TwitterApi from "twitter-api-v2";
-import { PrismaClient } from "@prisma/client";
+import { prismaClient } from "postify-db";
 
-const prismaClient = new PrismaClient();
 const ONE_MINUTE = `*/1 * * * *`;
 
 cron.schedule(ONE_MINUTE, async () => {
@@ -24,14 +23,12 @@ cron.schedule(ONE_MINUTE, async () => {
     for (const user of users) {
       const twitterClient = new TwitterApi(user.twitterAccessToken);
       await Promise.all(
-        user.tweets.map(({ text }: { text: string }) =>
-          twitterClient.v2.tweet(text)
-        )
+        user.tweets.map(({ text }) => twitterClient.v2.tweet(text))
       );
       await prismaClient.tweets.updateMany({
         where: {
           id: {
-            in: user.tweets.map(({ id }: { id: number }) => id),
+            in: user.tweets.map(({ id }) => id),
           },
         },
         data: {
